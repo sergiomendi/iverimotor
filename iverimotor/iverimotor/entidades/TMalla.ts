@@ -6,4 +6,8 @@ export default class TMalla extends TEntidad {
   constructor() {
     super();
   }
+
+  cargarMalla(TFichero ) {
+    this.malla = 
+  }
 }
