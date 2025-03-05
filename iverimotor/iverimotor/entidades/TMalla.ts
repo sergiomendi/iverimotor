@@ -1,5 +1,5 @@
 import TEntidad from './TEntidad';
-import TRecursoMalla from '../recursos/TRecursoMalla';
+import TRecursoMalla from '../recursos/TRecurso';
 
 export default class TMalla extends TEntidad {
   malla: TRecursoMalla | undefined;
@@ -7,7 +7,7 @@ export default class TMalla extends TEntidad {
     super();
   }
 
-  cargarMalla(TFichero ) {
-    this.malla = 
-  }
+  // cargarMalla(TFichero ) {
+  //   this.malla =
+  // }
 }
