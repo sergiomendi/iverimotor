@@ -39,26 +39,6 @@ export class EngineService implements OnDestroy {
     this.gl.clearColor(0, 0, 0, 1);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     this.setupShaders();
-    // Definir geometría simple (triángulo)
-    const vertices = new Float32Array([0.0, 1.0, -1.0, -1.0, 1.0, -1.0]);
-
-    const buffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
-
-    const positionLocation = this.gl.getAttribLocation(
-      this.program,
-      'a_position'
-    );
-    this.gl.enableVertexAttribArray(positionLocation);
-    this.gl.vertexAttribPointer(
-      positionLocation,
-      2,
-      this.gl.FLOAT,
-      false,
-      0,
-      0
-    );
 
     // Crear escena con nodos
     const camara = new TCamara();
