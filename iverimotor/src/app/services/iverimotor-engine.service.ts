@@ -1,8 +1,8 @@
 import { ElementRef, Injectable, NgZone, OnDestroy } from '@angular/core';
-import TEscena from '../../../iverimotor/TEscena';
-import TCamara from '../../../iverimotor/TCamara';
-import TLuz from '../../../iverimotor/TLuz';
-import TMapa from '../../../iverimotor/TMapa';
+import TEscena from '../../../iverimotor/nodos/TEscena';
+import TCamara from '../../../iverimotor/entidades/TCamara';
+import TLuz from '../../../iverimotor/entidades/TLuz';
+import TAnimal from '../../../iverimotor/nodos/TAnimal';
 
 @Injectable({
   providedIn: 'root',
@@ -12,10 +12,10 @@ export class EngineService implements OnDestroy {
   private gl!: WebGLRenderingContext;
   private program!: WebGLProgram;
   private frameId!: number;
-  private rootNode!: TEscena;
+  private nodoRaiz!: TEscena;
 
   constructor(private ngZone: NgZone) {
-    this.rootNode = new TEscena();
+    this.nodoRaiz = new TEscena();
   }
 
   public ngOnDestroy(): void {
@@ -31,7 +31,6 @@ export class EngineService implements OnDestroy {
       console.error('WebGL no soportado');
       return;
     }
-    console.log('WebGL context obtained successfully');
     this.initWebGL();
     this.animate();
   }
@@ -65,9 +64,9 @@ export class EngineService implements OnDestroy {
     const camara = new TCamara();
     const luz = new TLuz();
     const mapa = new TMapa();
-    this.rootNode.addChild(camara);
-    this.rootNode.addChild(luz);
-    this.rootNode.addChild(mapa);
+    this.nodoRaiz.addChild(camara);
+    this.nodoRaiz.addChild(luz);
+    this.nodoRaiz.addChild(mapa);
   }
 
   private setupShaders() {
@@ -132,7 +131,7 @@ export class EngineService implements OnDestroy {
   private animate() {
     this.frameId = requestAnimationFrame(() => this.animate());
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-    this.rootNode.update();
-    this.rootNode.render(this.gl);
+    this.nodoRaiz.update();
+    this.nodoRaiz.render(this.gl);
   }
 }

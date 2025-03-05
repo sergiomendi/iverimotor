@@ -1,6 +1,6 @@
 import TNodo from './TNodo';
 
-export default class TLuz extends TNodo {
+export default class TAnimal extends TNodo {
   constructor() {
     super();
   }
