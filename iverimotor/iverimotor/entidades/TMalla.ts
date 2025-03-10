@@ -7,7 +7,7 @@ export default class TMalla extends TEntidad {
     super();
   }
 
-  // cargarMalla(TFichero ) {
-  //   this.malla =
-  // }
+  cargarMalla(malla: TFichero): void {
+    this.malla = malla;
+  }
 }

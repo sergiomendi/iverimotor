@@ -1,17 +1,17 @@
-import TRecurso from './TRecurso';
+import TRecursoMalla from './TRecursoMalla';
 
 export default class TGestorRecursos {
-  recursos: TRecurso[];
+  recursos: TRecursoMalla[];
   constructor() {
     this.recursos = [];
   }
 
-  getRecurso(nombre: string): TRecurso | undefined {
-    var rec: TRecurso | undefined = this.recursos.find(
+  getRecurso(nombre: string): TRecursoMalla | undefined {
+    var rec: TRecursoMalla | undefined = this.recursos.find(
       (recurso) => recurso.getNombre() === nombre
     );
     if (rec === undefined) {
-      rec = new TRecurso(nombre);
+      rec = new TRecursoMalla(nombre, 0, 0, 0);
       rec.cargarFichero(nombre);
       this.recursos.push(rec);
     }

@@ -48,7 +48,7 @@ export class EngineService implements OnDestroy {
 
   public crearMalla(fichero: string): TMalla {
     const tMalla = new TMalla();
-    this.gestorRecursos.getRecurso(fichero);
+    tMalla.cargarMalla(this.gestorRecursos.getRecurso(fichero));
     return tMalla;
   }
 

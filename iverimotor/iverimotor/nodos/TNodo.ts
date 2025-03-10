@@ -39,10 +39,11 @@ export default class TNodo {
         matrizAcumulada,
         this.calcularMatriz()
       );
-      // this.entidad?.dibujar(this.matrizTransf);
       this.actualizarMatriz = false;
     }
-
+    if (this.entidad) {
+      this.entidad?.dibujar(this.matrizTransf);
+    }
     this.hijos.forEach((hijo) => hijo.render(this.matrizTransf));
   }
 
