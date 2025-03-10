@@ -3,13 +3,16 @@ import TCamara from '../../../iverimotor/entidades/TCamara';
 import TLuz from '../../../iverimotor/entidades/TLuz';
 import TNodo from '../../../iverimotor/nodos/TNodo';
 import TMalla from '../../../iverimotor/entidades/TMalla';
-import { mat4 } from 'gl-matrix';
+import TEntidad from '../../../iverimotor/entidades/TEntidad';
+import TGestorRecursos from '../../../iverimotor/recursos/TGestorRecursos';
+import { mat4, vec3 } from 'gl-matrix';
 
 @Injectable({ providedIn: 'root' })
 export class EngineService implements OnDestroy {
   private gl!: WebGLRenderingContext;
   private frameId!: number;
-  private nodoRaiz = new TNodo();
+  public nodoRaiz = new TNodo();
+  private gestorRecursos = new TGestorRecursos();
 
   constructor(private ngZone: NgZone) {}
 
@@ -17,27 +20,47 @@ export class EngineService implements OnDestroy {
     if (this.frameId) cancelAnimationFrame(this.frameId);
   }
 
-  public createScene(canvas: ElementRef<HTMLCanvasElement>): void {
+  public crearNodo(
+    padre: TNodo,
+    entidad: TEntidad,
+    traslacion: vec3,
+    escalado: vec3,
+    rotacion: vec3
+  ): TNodo {
+    const nodo = new TNodo(entidad);
+    padre.addChild(nodo);
+    nodo.traslacion = traslacion;
+    nodo.escalado = escalado;
+    nodo.rotacion = rotacion;
+    nodo.actualizarMatriz = true;
+    return nodo;
+  }
+
+  public crearCamara(): TCamara {
+    const tCamara = new TCamara();
+    return tCamara;
+  }
+
+  public crearLuz(): TLuz {
+    const tLuz = new TLuz();
+    return tLuz;
+  }
+
+  public crearMalla(fichero: string): TMalla {
+    const tMalla = new TMalla();
+    this.gestorRecursos.getRecurso(fichero);
+    return tMalla;
+  }
+
+  public crearEscena(canvas: ElementRef<HTMLCanvasElement>): void {
+    // Contexto WebGL al Canvas
     this.gl = canvas.nativeElement.getContext('webgl')!;
     if (!this.gl) return console.error('WebGL no soportado');
 
     this.gl.clearColor(0, 0, 0, 1);
-    this.setupScene();
+
+    // Animar
     this.animate();
-  }
-
-  private setupScene() {
-    const nCamara = new TNodo();
-    const nLuz = new TNodo();
-    const nAnimal = new TNodo();
-
-    nCamara.setEntidad(new TCamara());
-    nLuz.setEntidad(new TLuz());
-    nAnimal.setEntidad(new TMalla());
-
-    this.nodoRaiz.addChild(nCamara);
-    this.nodoRaiz.addChild(nLuz);
-    this.nodoRaiz.addChild(nAnimal);
   }
 
   private animate() {
