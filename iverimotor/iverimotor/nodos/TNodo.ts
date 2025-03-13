@@ -29,7 +29,7 @@ export default class TNodo {
     this.hijos.forEach((hijo) => hijo.update());
   }
 
-  public render(matrizAcumulada: mat4): void {
+  public render(gl: WebGLRenderingContext, matrizAcumulada: mat4): void {
     let actualizarMatriz = true;
 
     if (actualizarMatriz) {
@@ -42,9 +42,9 @@ export default class TNodo {
       this.actualizarMatriz = false;
     }
     if (this.entidad) {
-      this.entidad?.dibujar(this.matrizTransf);
+      this.entidad.dibujar(gl, matrizAcumulada);
     }
-    this.hijos.forEach((hijo) => hijo.render(this.matrizTransf));
+    this.hijos.forEach((hijo) => hijo.render(gl, this.matrizTransf));
   }
 
   public calcularMatriz(): mat4 {

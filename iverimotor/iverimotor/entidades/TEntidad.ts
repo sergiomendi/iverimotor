@@ -1,4 +1,6 @@
-export default class TEntidad {
+import { mat4 } from 'gl-matrix';
+
+export default abstract class TEntidad {
   constructor() {}
-  dibujar(): void {}
+  abstract dibujar(gl: WebGLRenderingContext, matrizTransformacion: mat4): void;
 }

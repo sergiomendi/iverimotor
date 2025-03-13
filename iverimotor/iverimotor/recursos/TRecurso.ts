@@ -9,5 +9,4 @@ export default class TRecurso {
   setNombre(nombre: string): void {
     this.nombre = nombre;
   }
-  cargarFichero(fichero: string): void {}
 }

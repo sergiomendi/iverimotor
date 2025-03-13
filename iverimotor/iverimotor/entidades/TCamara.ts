@@ -1,3 +1,4 @@
+import { mat4 } from 'gl-matrix';
 import TEntidad from './TEntidad';
 
 export default class TCamara extends TEntidad {
@@ -13,4 +14,5 @@ export default class TCamara extends TEntidad {
   setParalela(): void {
     // this.esPerspectiva = esPerspectiva;
   }
+  dibujar(gl: WebGLRenderingContext, matrizTransformacion: mat4): void {}
 }
