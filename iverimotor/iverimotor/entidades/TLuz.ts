@@ -19,7 +19,7 @@ export default class TLuz extends TEntidad {
   }
 
   dibujar(gl: WebGLRenderingContext, matrizTransformacion: mat4): void {
-    console.log('Dibujando luz con intensidad', this.intensidad);
+    // console.log('Dibujando luz con intensidad', this.intensidad);
 
     // Usar el shader program
     gl.useProgram(this.shaderProgram);

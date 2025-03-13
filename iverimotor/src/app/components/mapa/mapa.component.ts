@@ -21,7 +21,10 @@ export class MapaComponent implements OnInit {
   public async dibujarMapa(): Promise<void> {
     const camara = this.engServ.crearCamara();
     const luz = this.engServ.crearLuz();
-    const mapa = await this.engServ.crearMalla();
+    const mapa = await this.engServ.crearMalla(
+      'mapa',
+      'assets/FinalBaseMesh.obj'
+    );
 
     // Crear nodos y añadir la malla, cámara y luz a la escena
     const nMalla = this.engServ.crearNodo(
@@ -47,5 +50,7 @@ export class MapaComponent implements OnInit {
       vec3.fromValues(1, 1, 1),
       vec3.fromValues(0, 0, 0)
     );
+
+    this.engServ.crearEscena(this.rendererCanvas);
   }
 }

@@ -47,20 +47,27 @@ export class EngineService implements OnDestroy {
     return luz;
   }
 
-  public async crearMalla(): Promise<TMalla> {
-    const tMalla = new TMalla(this.shaderProgram);
-    tMalla.inicializar(this.gl);
+  public async crearMalla(nombre: string, fichero: string): Promise<TMalla> {
+    const recursoMalla = new TRecursoMalla(nombre, fichero);
+    this.gestorRecursos.recursosMalla.push(recursoMalla);
+    await recursoMalla.cargarFichero(); // Cargar el modelo 3D desde un archivo OBJ
+    recursoMalla.inicializarBuffers(this.gl); // Inicializar buffers con WebGL
+
+    const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
     return tMalla;
   }
 
-  public crearEscena(canvas: ElementRef<HTMLCanvasElement>): void {
+  public async crearEscena(
+    canvas: ElementRef<HTMLCanvasElement>
+  ): Promise<void> {
     this.gl = canvas.nativeElement.getContext('webgl')!;
     if (!this.gl) {
       console.error('WebGL no soportado');
       return;
     }
 
-    this.gl.clearColor(0.0588, 0.1176, 0.2196, 1); // Fondo
+    console.log('Numero recursos:', this.gestorRecursos.recursosMalla.length);
+    this.gl.clearColor(0.0588, 0.1176, 0.2196, 1);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.initShaders();
     this.animate();
