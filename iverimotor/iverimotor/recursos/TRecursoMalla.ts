@@ -19,6 +19,7 @@ export default class TRecursoMalla extends TRecurso {
   // Método para cargar el archivo OBJ
   public async cargarFichero(): Promise<void> {
     try {
+      console.log(`Cargando archivo ${this.fichero}...`);
       const respuesta = await fetch(this.fichero);
       const texto = await respuesta.text();
       this.procesarOBJ(texto);

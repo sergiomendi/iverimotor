@@ -48,11 +48,9 @@ export class EngineService implements OnDestroy {
   }
 
   public async crearMalla(nombre: string, fichero: string): Promise<TMalla> {
+    console.log('Creando malla:', nombre);
     const recursoMalla = new TRecursoMalla(nombre, fichero);
-    this.gestorRecursos.recursosMalla.push(recursoMalla);
-    await recursoMalla.cargarFichero(); // Cargar el modelo 3D desde un archivo OBJ
-    recursoMalla.inicializarBuffers(this.gl); // Inicializar buffers con WebGL
-
+    this.gestorRecursos.getRecurso('mapa', 'assets/FinalBaseMesh.obj', this.gl);
     const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
     return tMalla;
   }
@@ -65,8 +63,6 @@ export class EngineService implements OnDestroy {
       console.error('WebGL no soportado');
       return;
     }
-
-    console.log('Numero recursos:', this.gestorRecursos.recursosMalla.length);
     this.gl.clearColor(0.0588, 0.1176, 0.2196, 1);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.initShaders();

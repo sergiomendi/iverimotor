@@ -13,8 +13,6 @@ export default class TMalla {
     this.gl = gl;
     this.recursoMalla = recursoMalla;
     this.shaderProgram = shaderProgram;
-
-    this.recursoMalla.inicializarBuffers(gl);
   }
 
   public dibujar(): void {

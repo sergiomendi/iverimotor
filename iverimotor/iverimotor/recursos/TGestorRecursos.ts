@@ -7,7 +7,6 @@ export default class TGestorRecursos {
     console.log('Me creo');
   }
 
-  // Método para obtener un recurso de malla
   async getRecurso(
     nombre: string,
     fichero: string,
