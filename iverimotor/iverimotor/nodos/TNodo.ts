@@ -30,19 +30,13 @@ export default class TNodo {
   }
 
   public render(gl: WebGLRenderingContext, matrizAcumulada: mat4): void {
-    let actualizarMatriz = true;
+    // Calcular la matriz de transformación para este nodo
+    const matrizTransformacion = this.calcularMatriz();
+    const matrizFinal = mat4.create();
+    mat4.multiply(matrizFinal, matrizAcumulada, matrizTransformacion);
 
-    if (actualizarMatriz) {
-      let matrizFinal = mat4.create();
-      this.matrizTransf = mat4.multiply(
-        matrizFinal,
-        matrizAcumulada,
-        this.calcularMatriz()
-      );
-      this.actualizarMatriz = false;
-    }
     if (this.entidad) {
-      this.entidad.dibujar(gl, matrizAcumulada);
+      this.entidad.dibujar(gl, this.matrizTransf); // Pasar la matriz de transformación
     }
     this.hijos.forEach((hijo) => hijo.render(gl, this.matrizTransf));
   }

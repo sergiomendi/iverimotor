@@ -1,4 +1,5 @@
 import TRecursoMalla from '../recursos/TRecursoMalla';
+import { mat4 } from 'gl-matrix';
 
 export default class TMalla {
   private gl: WebGLRenderingContext;
@@ -15,8 +16,7 @@ export default class TMalla {
     this.shaderProgram = shaderProgram;
   }
 
-  public dibujar(): void {
-    const gl = this.gl;
+  public dibujar(gl: WebGLRenderingContext, matrizTransformacion: mat4): void {
     const shaderProgram = this.shaderProgram;
 
     gl.useProgram(shaderProgram);
@@ -25,6 +25,12 @@ export default class TMalla {
     const positionLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
     const normalLocation = gl.getAttribLocation(shaderProgram, 'aNormal');
     const texCoordLocation = gl.getAttribLocation(shaderProgram, 'aTexCoord');
+
+    // Pasar la matriz de transformación al shader
+    const uModelMatrix = gl.getUniformLocation(shaderProgram, 'uModelMatrix');
+    if (uModelMatrix) {
+      gl.uniformMatrix4fv(uModelMatrix, false, matrizTransformacion);
+    }
 
     // Vincular buffer de vértices
     if (this.recursoMalla.vertexBuffer) {

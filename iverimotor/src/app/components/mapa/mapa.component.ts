@@ -31,19 +31,10 @@ export class MapaComponent implements OnInit {
       'assets/FinalBaseMesh.obj'
     );
 
-    // Crear nodos y añadir la malla, cámara y luz a la escena
-    this.engServ.crearNodo(
-      this.engServ.nodoRaiz,
-      mapa,
-      vec3.fromValues(0, 0, 0),
-      vec3.fromValues(1, 1, 1),
-      vec3.fromValues(0, 0, 0)
-    );
-
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,
       camara,
-      vec3.fromValues(0, 0, 5), // Posición de la cámara
+      camara.getPos(),
       vec3.fromValues(1, 1, 1),
       vec3.fromValues(0, 0, 0)
     );
@@ -52,6 +43,15 @@ export class MapaComponent implements OnInit {
       this.engServ.nodoRaiz,
       luz,
       vec3.fromValues(0, 5, 0), // Posición de la luz
+      vec3.fromValues(1, 1, 1),
+      vec3.fromValues(0, 0, 0)
+    );
+
+    // Crear nodos y añadir la malla, cámara y luz a la escena
+    this.engServ.crearNodo(
+      this.engServ.nodoRaiz,
+      mapa,
+      vec3.fromValues(0, 0, 0),
       vec3.fromValues(1, 1, 1),
       vec3.fromValues(0, 0, 0)
     );
