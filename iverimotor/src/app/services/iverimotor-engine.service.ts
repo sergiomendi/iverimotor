@@ -43,14 +43,14 @@ export class EngineService implements OnDestroy {
 
   public crearLuz(): TLuz {
     const luz = new TLuz(this.shaderProgram);
-    luz.setIntensidad(vec4.fromValues(1, 1, 1, 1));
+    luz.setIntensidad(vec4.fromValues(1, 0, 0, 0.2));
     return luz;
   }
 
   public async crearMalla(nombre: string, fichero: string): Promise<TMalla> {
     console.log('Creando malla:', nombre);
     const recursoMalla = await this.gestorRecursos.getRecurso(
-      'mapa',
+      'humano',
       'assets/FinalBaseMesh.obj',
       this.gl
     );
