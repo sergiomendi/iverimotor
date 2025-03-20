@@ -43,7 +43,7 @@ export class EngineService implements OnDestroy {
 
   public crearLuz(): TLuz {
     const luz = new TLuz(this.shaderProgram);
-    luz.setIntensidad(vec4.fromValues(1, 0, 0, 0.2));
+    luz.setIntensidad(vec4.fromValues(1, 0, 0, 0));
     return luz;
   }
 
@@ -66,10 +66,26 @@ export class EngineService implements OnDestroy {
       console.error('WebGL no soportado');
       return;
     }
-    this.gl.clearColor(0.0588, 0.1176, 0.2196, 1);
+    this.setCanvasSize(canvas.nativeElement);
+    this.gl.clearColor(0, 0, 0, 1);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.initShaders();
     this.animate();
+  }
+
+  private setCanvasSize(canvas: HTMLCanvasElement): void {
+    // Obtener el tamaño del contenedor del canvas
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
+
+    // Verificar si el canvas necesita cambiar de tamaño
+    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
+    }
+
+    // Ajustar el viewport de WebGL
+    this.gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
   private initShaders(): void {
