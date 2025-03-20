@@ -27,7 +27,7 @@ export class MapaComponent implements OnInit {
     const camara = this.engServ.crearCamara();
     const luz = this.engServ.crearLuz();
     const mapa = await this.engServ.crearMalla(
-      'mapa',
+      'humano',
       'assets/FinalBaseMesh.obj'
     );
 

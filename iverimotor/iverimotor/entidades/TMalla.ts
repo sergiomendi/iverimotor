@@ -37,6 +37,8 @@ export default class TMalla {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.vertexBuffer);
       gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(positionLocation);
+    } else {
+      console.error('Vertex buffer no está definido');
     }
 
     // Vincular buffer de normales (si existe)
@@ -44,6 +46,8 @@ export default class TMalla {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.normalBuffer);
       gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(normalLocation);
+    } else {
+      console.warn('Normal buffer no está definido o no se usa en el shader');
     }
 
     // Vincular buffer de coordenadas de textura (si existe)
@@ -51,6 +55,10 @@ export default class TMalla {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.textureCoordBuffer);
       gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(texCoordLocation);
+    } else {
+      console.warn(
+        'Texture coordinate buffer no está definido o no se usa en el shader'
+      );
     }
 
     // Vincular buffer de índices
@@ -62,6 +70,8 @@ export default class TMalla {
         gl.UNSIGNED_SHORT,
         0
       );
+    } else {
+      console.error('Index buffer no está definido');
     }
   }
 }

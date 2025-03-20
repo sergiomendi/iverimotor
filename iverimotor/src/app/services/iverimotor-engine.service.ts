@@ -50,8 +50,8 @@ export class EngineService implements OnDestroy {
   public async crearMalla(nombre: string, fichero: string): Promise<TMalla> {
     console.log('Creando malla:', nombre);
     const recursoMalla = await this.gestorRecursos.getRecurso(
-      'humano',
-      'assets/FinalBaseMesh.obj',
+      nombre,
+      fichero,
       this.gl
     );
     const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
@@ -61,7 +61,7 @@ export class EngineService implements OnDestroy {
   public async crearEscena(
     canvas: ElementRef<HTMLCanvasElement>
   ): Promise<void> {
-    this.gl = canvas.nativeElement.getContext('webgl')!;
+    this.gl = canvas.nativeElement.getContext('webgl', { antialias: true })!;
     if (!this.gl) {
       console.error('WebGL no soportado');
       return;
@@ -121,7 +121,7 @@ export class EngineService implements OnDestroy {
 
   void main(void) {
     // Usar las normales y coordenadas de textura para calcular el color
-    gl_FragColor = uLightIntensity * vec4(vTexCoord, 1.0, 1.0); // Ejemplo simple
+    gl_FragColor = uLightIntensity * vec4(vTexCoord, 0.0, 1.0); // Ejemplo simple
   }
 `;
 
@@ -192,10 +192,10 @@ export class EngineService implements OnDestroy {
     const projectionMatrix = mat4.create();
     mat4.perspective(
       projectionMatrix,
-      Math.PI / 4,
+      Math.PI / 6,
       this.gl.canvas.width / this.gl.canvas.height,
-      0.1,
-      100.0
+      0.01,
+      60.0
     );
 
     // Pasar matrices al shader
