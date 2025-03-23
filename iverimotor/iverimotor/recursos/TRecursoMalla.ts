@@ -58,8 +58,6 @@ export default class TRecursoMalla extends TRecurso {
           if (partes.length >= 3) {
             // Asegura que hay al menos 2 coordenadas (u, v)
             texCoords.push([parseFloat(partes[1]), parseFloat(partes[2])]);
-          } else {
-            console.log('Error en las coordenadas de textura');
           }
           break;
 
