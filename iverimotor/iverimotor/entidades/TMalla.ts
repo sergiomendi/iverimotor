@@ -32,6 +32,44 @@ export default class TMalla {
       gl.uniformMatrix4fv(uModelMatrix, false, matrizTransformacion);
     }
 
+    // Pasar las texturas al shader
+    const uBaseColorTexture = gl.getUniformLocation(
+      shaderProgram,
+      'uBaseColorTexture'
+    );
+    if (
+      uBaseColorTexture &&
+      this.recursoGLTF.textures &&
+      this.recursoGLTF.textures[0]
+    ) {
+      gl.activeTexture(gl.TEXTURE0); // Activar TEXTURE0
+      gl.bindTexture(gl.TEXTURE_2D, this.recursoGLTF.textures[0]); // Usar la primera textura (color base)
+      gl.uniform1i(uBaseColorTexture, 0); // Pasar TEXTURE0 al shader
+    }
+
+    const uMetallicRoughnessTexture = gl.getUniformLocation(
+      shaderProgram,
+      'uMetallicRoughnessTexture'
+    );
+    if (
+      uMetallicRoughnessTexture &&
+      this.recursoGLTF.textures &&
+      this.recursoGLTF.textures[1]
+    ) {
+      gl.activeTexture(gl.TEXTURE1); // Activar TEXTURE1
+      gl.bindTexture(gl.TEXTURE_2D, this.recursoGLTF.textures[1]); // Usar la segunda textura (metalicidad/rugosidad)
+      gl.uniform1i(uMetallicRoughnessTexture, 1); // Pasar TEXTURE1 al shader
+    }
+
+    // Pasar la intensidad de la luz al shader
+    const uLightIntensity = gl.getUniformLocation(
+      shaderProgram,
+      'uLightIntensity'
+    );
+    if (uLightIntensity) {
+      gl.uniform4fv(uLightIntensity, [1.0, 1.0, 1.0, 1.0]); // Luz blanca con intensidad completa
+    }
+
     // Vincular buffer de vértices
     if (this.recursoGLTF.vertexBuffer) {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoGLTF.vertexBuffer);

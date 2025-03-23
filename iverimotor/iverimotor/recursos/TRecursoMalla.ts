@@ -9,14 +9,17 @@ export default class TRecursoMalla extends TRecurso {
   public normales: number[] = [];
   public texCoords: number[] = [];
   public indices: number[] = [];
+  public textures: WebGLTexture[] = [];
   private fichero: string;
 
   constructor(nombre: string, fichero: string) {
     super(nombre);
     this.fichero = fichero;
   }
-
-  public async cargarFichero(): Promise<void> {
+  public async cargarFichero(
+    gl: WebGLRenderingContext,
+    shaderProgram: WebGLProgram
+  ): Promise<void> {
     try {
       console.log(`Cargando archivo GLTF ${this.fichero}...`);
       const respuesta = await fetch(this.fichero);
@@ -28,8 +31,18 @@ export default class TRecursoMalla extends TRecurso {
       const bufferResponse = await fetch(`assets/gltf/${buffer.uri}`);
       const bufferData = await bufferResponse.arrayBuffer();
 
+      // Cargar texturas
+      const textures = await this.cargarTexturas(gl, gltfData);
+
       // Procesar el archivo GLTF
       await this.procesarGLTF(gltfData, bufferData);
+
+      // Configurar materiales
+      if (gltfData.materials) {
+        for (const materialDef of gltfData.materials) {
+          this.configurarMaterial(gl, shaderProgram, materialDef, textures);
+        }
+      }
     } catch (error) {
       console.error(`Error al cargar el archivo GLTF ${this.fichero}:`, error);
     }
@@ -151,6 +164,111 @@ export default class TRecursoMalla extends TRecurso {
         new Uint16Array(this.indices),
         gl.STATIC_DRAW
       );
+    }
+  }
+
+  private async cargarTexturas(
+    gl: WebGLRenderingContext,
+    gltfData: any
+  ): Promise<WebGLTexture[]> {
+    const textures: WebGLTexture[] = [];
+
+    if (!gltfData.images || !gltfData.textures) {
+      console.warn('El archivo GLTF no contiene imágenes o texturas.');
+      return textures;
+    }
+
+    for (const textureDef of gltfData.textures) {
+      const imageDef = gltfData.images[textureDef.source];
+
+      // Cargar la imagen
+      const image = await this.cargarImagen(`assets/gltf/${imageDef.uri}`);
+
+      // Crear la textura en WebGL
+      const texture = gl.createTexture();
+      if (!texture) {
+        console.error('No se pudo crear la textura en WebGL.');
+        continue;
+      }
+
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        image
+      );
+      gl.generateMipmap(gl.TEXTURE_2D);
+
+      // Configurar parámetros de la textura
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_MIN_FILTER,
+        gl.LINEAR_MIPMAP_LINEAR
+      );
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
+      textures.push(texture);
+    }
+
+    return textures;
+  }
+
+  private cargarImagen(uri: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.src = uri;
+      image.onload = () => resolve(image);
+      image.onerror = (error) => reject(error);
+    });
+  }
+
+  private configurarMaterial(
+    gl: WebGLRenderingContext,
+    shaderProgram: WebGLProgram,
+    materialDef: any,
+    textures: WebGLTexture[]
+  ): void {
+    if (materialDef.pbrMetallicRoughness) {
+      const pbr = materialDef.pbrMetallicRoughness;
+
+      // Configurar la textura de color base
+      if (pbr.baseColorTexture !== undefined) {
+        const textureIndex = pbr.baseColorTexture.index;
+        const texture = textures[textureIndex];
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        const uBaseColorTexture = gl.getUniformLocation(
+          shaderProgram,
+          'uBaseColorTexture'
+        );
+        if (uBaseColorTexture) {
+          gl.uniform1i(uBaseColorTexture, 0); // TEXTURE0
+        }
+      }
+
+      // Configurar la textura de metalicidad y rugosidad
+      if (pbr.metallicRoughnessTexture !== undefined) {
+        const textureIndex = pbr.metallicRoughnessTexture.index;
+        const texture = textures[textureIndex];
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        const uMetallicRoughnessTexture = gl.getUniformLocation(
+          shaderProgram,
+          'uMetallicRoughnessTexture'
+        );
+        if (uMetallicRoughnessTexture) {
+          gl.uniform1i(uMetallicRoughnessTexture, 1); // TEXTURE1
+        }
+      }
     }
   }
 }

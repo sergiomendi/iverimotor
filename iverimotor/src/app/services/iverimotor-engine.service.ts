@@ -52,7 +52,8 @@ export class EngineService implements OnDestroy {
     const recursoMalla = await this.gestorRecursos.getRecurso(
       nombre,
       fichero,
-      this.gl
+      this.gl,
+      this.shaderProgram
     );
     const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
     return tMalla;
@@ -89,41 +90,40 @@ export class EngineService implements OnDestroy {
   }
 
   private initShaders(): void {
-    // VERTEX SHADER: Sirve para las posiciones de los vértices
-    // Su función principal es transformar las coordenadas de los vértices de un espacio de coordenadas a otro.
+    // VERTEX SHADER
     const vertexShaderSource = `
-  attribute vec3 aPosition;
-  attribute vec3 aNormal;       // Normales
-  attribute vec2 aTexCoord;     // Coordenadas de textura
-  uniform mat4 uModelMatrix;    // Matriz de transformación
-  uniform mat4 uViewMatrix;     // Matriz de vista (cámara)
-  uniform mat4 uProjectionMatrix; // Matriz de proyección
+      attribute vec3 aPosition;
+      attribute vec3 aNormal;
+      attribute vec2 aTexCoord;
+      uniform mat4 uModelMatrix;
+      uniform mat4 uViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      varying vec3 vNormal;
+      varying vec2 vTexCoord;
+  
+      void main(void) {
+        gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+        vNormal = aNormal;
+        vTexCoord = aTexCoord;
+      }
+    `;
 
-  varying vec3 vNormal;         // Pasar normales al fragment shader
-  varying vec2 vTexCoord;       // Pasar coordenadas de textura al fragment shader
-
-  void main(void) {
-    // Transformar el vértice con la matriz de modelo, vista y proyección
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
-
-    // Pasar normales y coordenadas de textura al fragment shader
-    vNormal = aNormal;
-    vTexCoord = aTexCoord;
-  }
-`;
-    // FRAGMENT SHADER: Sirve para los colores de cada fragmento (píxel potencial)
-    // generado por el rasterizador.
+    // FRAGMENT SHADER
     const fragmentShaderSource = `
-  precision mediump float;
-  varying vec3 vNormal;         // Normales recibidas del vertex shader
-  varying vec2 vTexCoord;       // Coordenadas de textura recibidas del vertex shader
-  uniform vec4 uLightIntensity; // Intensidad de la luz
-
-  void main(void) {
-    // Usar las normales y coordenadas de textura para calcular el color
-    gl_FragColor = uLightIntensity * vec4(vTexCoord, 0.0, 1.0); // Ejemplo simple
-  }
-`;
+      precision mediump float;
+      varying vec3 vNormal;
+      varying vec2 vTexCoord;
+      uniform sampler2D uBaseColorTexture;
+      uniform sampler2D uMetallicRoughnessTexture;
+      uniform vec4 uLightIntensity;
+  
+      void main(void) {
+        vec4 baseColor = texture2D(uBaseColorTexture, vTexCoord);
+        vec4 metallicRoughness = texture2D(uMetallicRoughnessTexture, vTexCoord);
+        vec3 finalColor = baseColor.rgb * uLightIntensity.rgb;
+        gl_FragColor = vec4(finalColor, baseColor.a);
+      }
+    `;
 
     const vertexShader = this.createShader(
       this.gl,

@@ -10,7 +10,8 @@ export default class TGestorRecursos {
   async getRecurso(
     nombre: string,
     fichero: string,
-    gl: WebGLRenderingContext
+    gl: WebGLRenderingContext,
+    shaderProgram: WebGLProgram
   ): Promise<TRecursoMalla> {
     // Buscar si el recurso ya está cargado
     let rec = this.recursosMalla.find(
@@ -22,7 +23,7 @@ export default class TGestorRecursos {
       rec = new TRecursoMalla(nombre, fichero);
 
       // Cargar el archivo .obj
-      await rec.cargarFichero();
+      await rec.cargarFichero(gl, shaderProgram);
 
       // Inicializar los buffers de WebGL
       rec.inicializarBuffers(gl);
