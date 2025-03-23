@@ -68,7 +68,7 @@ export class EngineService implements OnDestroy {
       return;
     }
     this.setCanvasSize(canvas.nativeElement);
-    this.gl.clearColor(0, 0, 0, 1);
+    this.gl.clearColor(0.0588, 0.1176, 0.2196, 1);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.initShaders();
     this.animate();
