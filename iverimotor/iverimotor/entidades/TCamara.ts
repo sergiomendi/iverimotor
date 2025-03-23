@@ -10,7 +10,7 @@ export default class TCamara extends TEntidad {
   constructor() {
     super();
     this.viewMatrix = mat4.create();
-    this.pos = vec3.fromValues(0, 0, 40); // Posición de la cámara
+    this.pos = vec3.fromValues(0, 0, 60); // Posición de la cámara
     this.target = vec3.fromValues(0, 0, 0); // Mirando al origen
     this.up = vec3.fromValues(0, 1, 0); // Vector "up" de la cámara
     this.actualizarViewMatrix();

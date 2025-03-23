@@ -1,18 +1,18 @@
-import TRecursoMalla from '../recursos/TRecursoMalla';
+import TRecursoGLTF from '../recursos/TRecursoMalla';
 import { mat4 } from 'gl-matrix';
 
 export default class TMalla {
   private gl: WebGLRenderingContext;
-  private recursoMalla: TRecursoMalla;
+  private recursoGLTF: TRecursoGLTF;
   private shaderProgram: WebGLProgram;
 
   constructor(
     gl: WebGLRenderingContext,
-    recursoMalla: TRecursoMalla,
+    recursoGLTF: TRecursoGLTF,
     shaderProgram: WebGLProgram
   ) {
     this.gl = gl;
-    this.recursoMalla = recursoMalla;
+    this.recursoGLTF = recursoGLTF;
     this.shaderProgram = shaderProgram;
   }
 
@@ -33,8 +33,8 @@ export default class TMalla {
     }
 
     // Vincular buffer de vértices
-    if (this.recursoMalla.vertexBuffer) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.vertexBuffer);
+    if (this.recursoGLTF.vertexBuffer) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoGLTF.vertexBuffer);
       gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(positionLocation);
     } else {
@@ -42,8 +42,8 @@ export default class TMalla {
     }
 
     // Vincular buffer de normales (si existe)
-    if (this.recursoMalla.normalBuffer && normalLocation !== -1) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.normalBuffer);
+    if (this.recursoGLTF.normalBuffer && normalLocation !== -1) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoGLTF.normalBuffer);
       gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(normalLocation);
     } else {
@@ -51,8 +51,8 @@ export default class TMalla {
     }
 
     // Vincular buffer de coordenadas de textura (si existe)
-    if (this.recursoMalla.textureCoordBuffer && texCoordLocation !== -1) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoMalla.textureCoordBuffer);
+    if (this.recursoGLTF.textureCoordBuffer && texCoordLocation !== -1) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.recursoGLTF.textureCoordBuffer);
       gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(texCoordLocation);
     } else {
@@ -62,11 +62,11 @@ export default class TMalla {
     }
 
     // Vincular buffer de índices
-    if (this.recursoMalla.indexBuffer) {
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.recursoMalla.indexBuffer);
+    if (this.recursoGLTF.indexBuffer) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.recursoGLTF.indexBuffer);
       gl.drawElements(
         gl.TRIANGLES,
-        this.recursoMalla.indices.length,
+        this.recursoGLTF.indices.length,
         gl.UNSIGNED_SHORT,
         0
       );

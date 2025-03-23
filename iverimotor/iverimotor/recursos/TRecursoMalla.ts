@@ -16,107 +16,100 @@ export default class TRecursoMalla extends TRecurso {
     this.fichero = fichero;
   }
 
-  // Método para cargar el archivo OBJ
   public async cargarFichero(): Promise<void> {
     try {
-      console.log(`Cargando archivo ${this.fichero}...`);
+      console.log(`Cargando archivo GLTF ${this.fichero}...`);
       const respuesta = await fetch(this.fichero);
-      const texto = await respuesta.text();
-      this.procesarOBJ(texto);
+      const gltfData = await respuesta.json();
+
+      // Cargar el buffer binario
+      const buffer = gltfData.buffers[0];
+      console.log('Buffer:', buffer.uri);
+      const bufferResponse = await fetch(`assets/gltf/${buffer.uri}`);
+      const bufferData = await bufferResponse.arrayBuffer();
+
+      // Procesar el archivo GLTF
+      await this.procesarGLTF(gltfData, bufferData);
     } catch (error) {
-      console.error(`Error al cargar el archivo ${this.fichero}:`, error);
+      console.error(`Error al cargar el archivo GLTF ${this.fichero}:`, error);
     }
   }
 
-  // Procesa el contenido de un archivo OBJ
-  private procesarOBJ(objTexto: string): void {
-    const posiciones: number[][] = []; // Almacena los vértices (v)
-    const normales: number[][] = []; // Almacena las normales (vn)
-    const texCoords: number[][] = []; // Almacena las coordenadas de textura (vt)
-    const indexMap = new Map<string, number>(); // Evita duplicados de vértices
-    let indexCount = 0; // Contador de índices únicos
+  private async procesarGLTF(
+    gltfData: any,
+    bufferData: ArrayBuffer
+  ): Promise<void> {
+    const bufferViews = gltfData.bufferViews;
+    const accessors = gltfData.accessors;
 
-    const lineas = objTexto.split('\n'); // Divide el archivo en líneas
+    // Procesar vértices (POSITION)
+    const positionAccessor = accessors.find((a: any) => a.type === 'VEC3');
+    const positionBufferView = bufferViews[positionAccessor.bufferView];
+    const positionSlice = bufferData.slice(
+      positionBufferView.byteOffset,
+      positionBufferView.byteOffset + positionBufferView.byteLength
+    );
 
-    for (const linea of lineas) {
-      const partes = linea.trim().split(/\s+/); // Divide la línea en partes
-      if (partes.length === 0 || partes[0] === '#') continue; // Ignora líneas vacías o comentarios
+    if (positionSlice.byteLength % 4 !== 0) {
+      console.error('El tamaño del buffer de vértices no es un múltiplo de 4');
+      return;
+    }
 
-      switch (partes[0]) {
-        case 'v': // Vértices
-          if (partes.length >= 4) {
-            // Asegura que hay al menos 3 coordenadas (x, y, z)
-            posiciones.push([
-              parseFloat(partes[1]),
-              parseFloat(partes[2]),
-              parseFloat(partes[3]),
-            ]);
-          }
-          break;
+    this.vertices = Array.from(new Float32Array(positionSlice));
 
-        case 'vt': // Coordenadas de textura
-          if (partes.length >= 3) {
-            // Asegura que hay al menos 2 coordenadas (u, v)
-            texCoords.push([parseFloat(partes[1]), parseFloat(partes[2])]);
-          }
-          break;
+    // Procesar coordenadas de textura (TEXCOORD_0)
+    const texCoordAccessor = accessors.find((a: any) => a.type === 'VEC2');
+    if (texCoordAccessor) {
+      const texCoordBufferView = bufferViews[texCoordAccessor.bufferView];
+      const texCoordSlice = bufferData.slice(
+        texCoordBufferView.byteOffset,
+        texCoordBufferView.byteOffset + texCoordBufferView.byteLength
+      );
 
-        case 'vn': // Normales
-          if (partes.length >= 4) {
-            // Asegura que hay al menos 3 coordenadas (x, y, z)
-            normales.push([
-              parseFloat(partes[1]),
-              parseFloat(partes[2]),
-              parseFloat(partes[3]),
-            ]);
-          }
-          break;
-
-        case 'f': // Caras (triángulos o quads)
-          if (partes.length < 4) continue; // Ignora caras con menos de 3 vértices
-
-          // Procesa cada vértice de la cara
-          const indicesCara = partes.slice(1).map((vertice) => {
-            const indices = vertice.split('/').map((idx) => {
-              const valor = parseInt(idx, 10);
-              return isNaN(valor) ? -1 : valor - 1; // Convierte a índice base 0
-            });
-
-            // Verifica si el vértice ya fue procesado
-            const key = vertice;
-            if (!indexMap.has(key)) {
-              const [posIdx, texIdx, normIdx] = indices;
-
-              // Añade vértice, normal y coordenadas de textura (si existen)
-              this.vertices.push(...posiciones[posIdx]);
-              if (texIdx >= 0 && texIdx < texCoords.length) {
-                this.texCoords.push(...texCoords[texIdx]);
-              }
-              if (normIdx >= 0 && normIdx < normales.length) {
-                this.normales.push(...normales[normIdx]);
-              }
-
-              indexMap.set(key, indexCount);
-              indexCount++;
-            }
-
-            return indexMap.get(key)!;
-          });
-
-          // Divide la cara en triángulos (si es un quad o polígono)
-          for (let i = 1; i < indicesCara.length - 1; i++) {
-            this.indices.push(
-              indicesCara[0],
-              indicesCara[i],
-              indicesCara[i + 1]
-            );
-          }
-          break;
+      if (texCoordSlice.byteLength % 4 !== 0) {
+        console.error(
+          'El tamaño del buffer de coordenadas de textura no es un múltiplo de 4'
+        );
+        return;
       }
+
+      this.texCoords = Array.from(new Float32Array(texCoordSlice));
+    }
+
+    // Procesar normales (NORMAL)
+    const normalAccessor = accessors.find((a: any) => a.type === 'VEC3');
+    if (normalAccessor) {
+      const normalBufferView = bufferViews[normalAccessor.bufferView];
+      const normalSlice = bufferData.slice(
+        normalBufferView.byteOffset,
+        normalBufferView.byteOffset + normalBufferView.byteLength
+      );
+
+      if (normalSlice.byteLength % 4 !== 0) {
+        console.error(
+          'El tamaño del buffer de normales no es un múltiplo de 4'
+        );
+        return;
+      }
+
+      this.normales = Array.from(new Float32Array(normalSlice));
+    }
+
+    // Procesar índices (INDICES)
+    const indicesAccessor = accessors.find(
+      (a: any) => a.type === 'SCALAR' && a.componentType === 5123
+    ); // 5123 = Uint16
+    if (indicesAccessor) {
+      const indicesBufferView = bufferViews[indicesAccessor.bufferView];
+      const indicesSlice = bufferData.slice(
+        indicesBufferView.byteOffset,
+        indicesBufferView.byteOffset + indicesBufferView.byteLength
+      );
+
+      this.indices = Array.from(new Uint16Array(indicesSlice));
     }
   }
 
-  // Inicializa buffers en WebGL
   public inicializarBuffers(gl: WebGLRenderingContext): void {
     // Buffer de vértices
     this.vertexBuffer = gl.createBuffer();
@@ -127,18 +120,7 @@ export default class TRecursoMalla extends TRecurso {
       gl.STATIC_DRAW
     );
 
-    // Buffer de normales
-    if (this.normales.length > 0) {
-      this.normalBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(this.normales),
-        gl.STATIC_DRAW
-      );
-    }
-
-    // Buffer de coordenadas de textura
+    // Buffer de coordenadas de textura (si existen)
     if (this.texCoords.length > 0) {
       this.textureCoordBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoordBuffer);
@@ -149,13 +131,26 @@ export default class TRecursoMalla extends TRecurso {
       );
     }
 
-    // Buffer de índices
-    this.indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    gl.bufferData(
-      gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(this.indices),
-      gl.STATIC_DRAW
-    );
+    // Buffer de normales (si existen)
+    if (this.normales.length > 0) {
+      this.normalBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(this.normales),
+        gl.STATIC_DRAW
+      );
+    }
+
+    // Buffer de índices (si existen)
+    if (this.indices.length > 0) {
+      this.indexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      gl.bufferData(
+        gl.ELEMENT_ARRAY_BUFFER,
+        new Uint16Array(this.indices),
+        gl.STATIC_DRAW
+      );
+    }
   }
 }

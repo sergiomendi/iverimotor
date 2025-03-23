@@ -175,7 +175,6 @@ export class EngineService implements OnDestroy {
     }
     return program;
   }
-
   private animate() {
     // Llamar a animate() antes de la próxima actualización de la pantalla en cada frame
     this.frameId = requestAnimationFrame(() => this.animate());
@@ -186,7 +185,6 @@ export class EngineService implements OnDestroy {
       .find((nodo) => nodo.getEntidad() instanceof TCamara)
       ?.getEntidad() as TCamara;
     const viewMatrix = camara ? camara.getViewMatrix() : mat4.create();
-    // mat4.lookAt(viewMatrix, [0, 0, 50], [0, 0, 0], [0, 1, 0]);
 
     // Configurar matriz de proyección
     const projectionMatrix = mat4.create();
@@ -198,6 +196,9 @@ export class EngineService implements OnDestroy {
       60.0
     );
 
+    // Activar el programa de shaders
+    this.gl.useProgram(this.shaderProgram);
+
     // Pasar matrices al shader
     const uViewMatrix = this.gl.getUniformLocation(
       this.shaderProgram,
@@ -207,10 +208,16 @@ export class EngineService implements OnDestroy {
       this.shaderProgram,
       'uProjectionMatrix'
     );
-    if (uViewMatrix && uProjectionMatrix) {
-      this.gl.uniformMatrix4fv(uViewMatrix, false, viewMatrix);
-      this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
+
+    if (!uViewMatrix || !uProjectionMatrix) {
+      console.error(
+        'No se pudieron encontrar las variables uniformes uViewMatrix o uProjectionMatrix en el shader.'
+      );
+      return;
     }
+
+    this.gl.uniformMatrix4fv(uViewMatrix, false, viewMatrix);
+    this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
 
     // Renderizar la escena
     const matrizInicial = mat4.create();

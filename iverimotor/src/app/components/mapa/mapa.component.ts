@@ -26,7 +26,10 @@ export class MapaComponent implements OnInit {
     // Crear entidades cámara, luz y malla
     const camara = this.engServ.crearCamara();
     const luz = this.engServ.crearLuz();
-    const mapa = await this.engServ.crearMalla('humano', 'assets/Tree1.obj');
+    const mapa = await this.engServ.crearMalla(
+      'hacha',
+      'assets/gltf/fire_axe.gltf'
+    );
 
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,
