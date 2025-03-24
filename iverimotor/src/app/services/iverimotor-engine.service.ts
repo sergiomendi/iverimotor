@@ -51,12 +51,11 @@ export class EngineService implements OnDestroy {
     console.log('Creando malla:', nombre);
     const recursoMalla = await this.gestorRecursos.getRecurso(
       nombre,
-      fichero,
+      `assets/${nombre}/${fichero}`,
       this.gl,
       this.shaderProgram
     );
-    const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
-    return tMalla;
+    return new TMalla(recursoMalla, this.shaderProgram);
   }
 
   public async crearEscena(

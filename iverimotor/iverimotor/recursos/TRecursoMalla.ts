@@ -28,7 +28,7 @@ export default class TRecursoMalla extends TRecurso {
       // Cargar el buffer binario
       const buffer = gltfData.buffers[0];
       console.log('Buffer:', buffer.uri);
-      const bufferResponse = await fetch(`assets/gltf/${buffer.uri}`);
+      const bufferResponse = await fetch(`assets/${this.nombre}/${buffer.uri}`);
       const bufferData = await bufferResponse.arrayBuffer();
 
       // Cargar texturas
@@ -182,7 +182,9 @@ export default class TRecursoMalla extends TRecurso {
       const imageDef = gltfData.images[textureDef.source];
 
       // Cargar la imagen
-      const image = await this.cargarImagen(`assets/gltf/${imageDef.uri}`);
+      const image = await this.cargarImagen(
+        `assets/${this.nombre}/${imageDef.uri}`
+      );
 
       // Crear la textura en WebGL
       const texture = gl.createTexture();
