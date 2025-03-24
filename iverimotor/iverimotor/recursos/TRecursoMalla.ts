@@ -55,72 +55,101 @@ export default class TRecursoMalla extends TRecurso {
     const bufferViews = gltfData.bufferViews;
     const accessors = gltfData.accessors;
 
-    // Procesar vértices (POSITION)
-    const positionAccessor = accessors.find((a: any) => a.type === 'VEC3');
-    const positionBufferView = bufferViews[positionAccessor.bufferView];
-    const positionSlice = bufferData.slice(
-      positionBufferView.byteOffset,
-      positionBufferView.byteOffset + positionBufferView.byteLength
-    );
+    // Limpiar datos existentes
+    this.vertices = [];
+    this.normales = [];
+    this.texCoords = [];
+    this.indices = [];
 
-    if (positionSlice.byteLength % 4 !== 0) {
-      console.error('El tamaño del buffer de vértices no es un múltiplo de 4');
-      return;
-    }
+    // Procesar todas las mallas
+    for (const mesh of gltfData.meshes || []) {
+      for (const primitive of mesh.primitives) {
+        // Procesar vértices (POSITION)
+        if (primitive.attributes.POSITION !== undefined) {
+          const { buffer, byteOffset, count } = this.obtenerDatosBuffer(
+            accessors[primitive.attributes.POSITION],
+            bufferViews,
+            bufferData
+          );
+          this.vertices = Array.from(
+            new Float32Array(buffer, byteOffset, count * 3)
+          );
+        }
 
-    this.vertices = Array.from(new Float32Array(positionSlice));
+        // Procesar normales (NORMAL)
+        if (primitive.attributes.NORMAL !== undefined) {
+          const { buffer, byteOffset, count } = this.obtenerDatosBuffer(
+            accessors[primitive.attributes.NORMAL],
+            bufferViews,
+            bufferData
+          );
+          this.normales = Array.from(
+            new Float32Array(buffer, byteOffset, count * 3)
+          );
+        }
 
-    // Procesar coordenadas de textura (TEXCOORD_0)
-    const texCoordAccessor = accessors.find((a: any) => a.type === 'VEC2');
-    if (texCoordAccessor) {
-      const texCoordBufferView = bufferViews[texCoordAccessor.bufferView];
-      const texCoordSlice = bufferData.slice(
-        texCoordBufferView.byteOffset,
-        texCoordBufferView.byteOffset + texCoordBufferView.byteLength
-      );
-
-      if (texCoordSlice.byteLength % 4 !== 0) {
-        console.error(
-          'El tamaño del buffer de coordenadas de textura no es un múltiplo de 4'
+        // Procesar coordenadas de textura (usar TEXCOORD_0 como principal)
+        const texCoordKey = Object.keys(primitive.attributes).find((k) =>
+          k.startsWith('TEXCOORD_')
         );
-        return;
+        if (texCoordKey) {
+          const { buffer, byteOffset, count } = this.obtenerDatosBuffer(
+            accessors[primitive.attributes[texCoordKey]],
+            bufferViews,
+            bufferData
+          );
+          this.texCoords = Array.from(
+            new Float32Array(buffer, byteOffset, count * 2)
+          );
+        }
+
+        // Procesar índices
+        if (primitive.indices !== undefined) {
+          const indicesAccessor = accessors[primitive.indices];
+          const { buffer, byteOffset, count } = this.obtenerDatosBuffer(
+            indicesAccessor,
+            bufferViews,
+            bufferData
+          );
+
+          switch (indicesAccessor.componentType) {
+            case 5121:
+              this.indices = Array.from(
+                new Uint8Array(buffer, byteOffset, count)
+              );
+              break;
+            case 5123:
+              this.indices = Array.from(
+                new Uint16Array(buffer, byteOffset, count)
+              );
+              break;
+            case 5125:
+              this.indices = Array.from(
+                new Uint32Array(buffer, byteOffset, count)
+              );
+              break;
+            default:
+              console.error('Tipo de índice no soportado');
+          }
+        }
       }
-
-      this.texCoords = Array.from(new Float32Array(texCoordSlice));
     }
+  }
 
-    // Procesar normales (NORMAL)
-    const normalAccessor = accessors.find((a: any) => a.type === 'VEC3');
-    if (normalAccessor) {
-      const normalBufferView = bufferViews[normalAccessor.bufferView];
-      const normalSlice = bufferData.slice(
-        normalBufferView.byteOffset,
-        normalBufferView.byteOffset + normalBufferView.byteLength
-      );
-
-      if (normalSlice.byteLength % 4 !== 0) {
-        console.error(
-          'El tamaño del buffer de normales no es un múltiplo de 4'
-        );
-        return;
-      }
-
-      this.normales = Array.from(new Float32Array(normalSlice));
-    }
-
-    // Procesar índices (INDICES)
-    const indicesAccessor = accessors.find(
-      (a: any) => a.type === 'SCALAR' && a.componentType === 5123
-    ); // 5123 = Uint16
-    if (indicesAccessor) {
-      const indicesBufferView = bufferViews[indicesAccessor.bufferView];
-      const indicesSlice = bufferData.slice(
-        indicesBufferView.byteOffset,
-        indicesBufferView.byteOffset + indicesBufferView.byteLength
-      );
-
-      this.indices = Array.from(new Uint16Array(indicesSlice));
-    }
+  // Método auxiliar para obtener datos del buffer
+  private obtenerDatosBuffer(
+    accessor: any,
+    bufferViews: any[],
+    bufferData: ArrayBuffer
+  ) {
+    const bufferView = bufferViews[accessor.bufferView];
+    const byteOffset =
+      (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
+    return {
+      buffer: bufferData,
+      byteOffset,
+      count: accessor.count,
+    };
   }
 
   public inicializarBuffers(gl: WebGLRenderingContext): void {

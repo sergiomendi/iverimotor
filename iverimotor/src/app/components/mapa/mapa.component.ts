@@ -26,7 +26,7 @@ export class MapaComponent implements OnInit {
     // Crear entidades cámara, luz y malla
     const camara = this.engServ.crearCamara();
     const luz = this.engServ.crearLuz();
-    const malla = await this.engServ.crearMalla('huron', 'scene.gltf');
+    const malla = await this.engServ.crearMalla('mapa', 'scene.gltf');
 
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,
@@ -39,11 +39,10 @@ export class MapaComponent implements OnInit {
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,
       luz,
-      vec3.fromValues(0, 5, 0), // Posición de la luz
+      vec3.fromValues(50, 100, 50), // Posición elevada de la luz
       vec3.fromValues(1, 1, 1),
       vec3.fromValues(0, 0, 0)
     );
-
     // Crear nodos y añadir la malla, cámara y luz a la escena
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,

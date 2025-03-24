@@ -99,7 +99,7 @@ export class EngineService implements OnDestroy {
       uniform mat4 uProjectionMatrix;
       varying vec3 vNormal;
       varying vec2 vTexCoord;
-  
+
       void main(void) {
         gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
         vNormal = aNormal;
@@ -115,7 +115,7 @@ export class EngineService implements OnDestroy {
       uniform sampler2D uBaseColorTexture;
       uniform sampler2D uMetallicRoughnessTexture;
       uniform vec4 uLightIntensity;
-  
+
       void main(void) {
         vec4 baseColor = texture2D(uBaseColorTexture, vTexCoord);
         vec4 metallicRoughness = texture2D(uMetallicRoughnessTexture, vTexCoord);
@@ -189,10 +189,10 @@ export class EngineService implements OnDestroy {
     const projectionMatrix = mat4.create();
     mat4.perspective(
       projectionMatrix,
-      Math.PI / 6,
+      Math.PI / 3,
       this.gl.canvas.width / this.gl.canvas.height,
-      0.01,
-      60.0
+      0.5,
+      1000.0
     );
 
     // Activar el programa de shaders
