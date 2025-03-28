@@ -16,17 +16,13 @@ export class MapaComponent implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.engServ.crearEscena(this.rendererCanvas);
     await this.dibujarMapa();
-    console.log(
-      'Hijos creados a la escena:',
-      this.engServ.nodoRaiz.hijos.length
-    );
   }
 
   public async dibujarMapa(): Promise<void> {
     // Crear entidades cámara, luz y malla
     const camara = this.engServ.crearCamara();
     const luz = this.engServ.crearLuz();
-    const malla = await this.engServ.crearMalla('mapa', 'scene.gltf');
+    const malla = await this.engServ.crearMalla('huron', 'scene.gltf');
 
     this.engServ.crearNodo(
       this.engServ.nodoRaiz,
@@ -48,7 +44,7 @@ export class MapaComponent implements OnInit {
       this.engServ.nodoRaiz,
       malla,
       vec3.fromValues(0, 0, 0),
-      vec3.fromValues(1, 1, 1),
+      vec3.fromValues(10, 50, 50),
       vec3.fromValues(0, 0, 0)
     );
   }

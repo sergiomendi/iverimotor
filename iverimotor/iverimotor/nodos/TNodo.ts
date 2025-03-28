@@ -32,13 +32,21 @@ export default class TNodo {
   public render(gl: WebGLRenderingContext, matrizAcumulada: mat4): void {
     // Calcular la matriz de transformación para este nodo
     const matrizTransformacion = this.calcularMatriz();
+
+    // Multiplicar por la matriz acumulada de los padres
     const matrizFinal = mat4.create();
     mat4.multiply(matrizFinal, matrizAcumulada, matrizTransformacion);
 
+    // Actualizar la matriz de transformación del nodo
+    this.matrizTransf = matrizFinal;
+
+    // Renderizar la entidad con la matriz correcta
     if (this.entidad) {
-      this.entidad.dibujar(gl, this.matrizTransf); // Pasar la matriz de transformación
+      this.entidad.dibujar(gl, matrizFinal); // Usar matrizFinal en lugar de this.matrizTransf
     }
-    this.hijos.forEach((hijo) => hijo.render(gl, this.matrizTransf));
+
+    // Renderizar hijos con la matriz acumulada
+    this.hijos.forEach((hijo) => hijo.render(gl, matrizFinal));
   }
 
   public calcularMatriz(): mat4 {
