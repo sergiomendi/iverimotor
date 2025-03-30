@@ -25,7 +25,6 @@ export default class TNodo {
   }
 
   public update() {
-    console.log('Updating node at position', this.pos);
     this.hijos.forEach((hijo) => hijo.update());
   }
 

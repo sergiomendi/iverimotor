@@ -26,10 +26,6 @@ export default class TMalla extends TEntidad {
       'aTexCoord'
     );
 
-    console.log('positionLocation:', positionLocation);
-    console.log('normalLocation:', normalLocation);
-    console.log('texCoordLocation:', texCoordLocation);
-
     // Pasar la matriz de transformación al shader
     const uModelMatrix = gl.getUniformLocation(
       this.shaderProgram,
@@ -102,7 +98,6 @@ export default class TMalla extends TEntidad {
       );
     }
 
-    console.log('Indices:', this.recursoGLTF.indices.length);
     // Vincular buffer de índices
     if (this.recursoGLTF.indexBuffer && this.recursoGLTF.indices.length > 0) {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.recursoGLTF.indexBuffer);
