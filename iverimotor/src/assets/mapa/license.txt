@@ -1,0 +1,11 @@
+Model Information:
+* title:	Península Ibérica, Europa
+* source:	https://sketchfab.com/3d-models/peninsula-iberica-europa-dca8fa9e8da74e72ad7b4c25a3db3fde
+* author:	CMPLab (https://sketchfab.com/secad)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Península Ibérica, Europa" (https://sketchfab.com/3d-models/peninsula-iberica-europa-dca8fa9e8da74e72ad7b4c25a3db3fde) by CMPLab (https://sketchfab.com/secad) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

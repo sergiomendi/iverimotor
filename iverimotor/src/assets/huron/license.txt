@@ -1,0 +1,11 @@
+Model Information:
+* title:	Chungungo - Lontra felina
+* source:	https://sketchfab.com/3d-models/chungungo-lontra-felina-4c54c34b193b4fe78fe1643bb8fb0ab7
+* author:	OCTOPUS (https://sketchfab.com/iqvi)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Chungungo - Lontra felina" (https://sketchfab.com/3d-models/chungungo-lontra-felina-4c54c34b193b4fe78fe1643bb8fb0ab7) by OCTOPUS (https://sketchfab.com/iqvi) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

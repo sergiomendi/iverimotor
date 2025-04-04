@@ -43,71 +43,86 @@ export class EngineService implements OnDestroy {
 
   public crearLuz(): TLuz {
     const luz = new TLuz(this.shaderProgram);
-    luz.setIntensidad(vec4.fromValues(1, 0, 0, 0.2));
+    luz.setIntensidad(vec4.fromValues(1, 0, 0, 0));
     return luz;
   }
 
   public async crearMalla(nombre: string, fichero: string): Promise<TMalla> {
     console.log('Creando malla:', nombre);
     const recursoMalla = await this.gestorRecursos.getRecurso(
-      'humano',
-      'assets/FinalBaseMesh.obj',
-      this.gl
+      nombre,
+      `assets/${nombre}/${fichero}`,
+      this.gl,
+      this.shaderProgram
     );
-    const tMalla = new TMalla(this.gl, recursoMalla, this.shaderProgram);
-    return tMalla;
+    return new TMalla(recursoMalla, this.shaderProgram);
   }
 
   public async crearEscena(
     canvas: ElementRef<HTMLCanvasElement>
   ): Promise<void> {
-    this.gl = canvas.nativeElement.getContext('webgl')!;
+    this.gl = canvas.nativeElement.getContext('webgl', { antialias: true })!;
     if (!this.gl) {
       console.error('WebGL no soportado');
       return;
     }
+    this.setCanvasSize(canvas.nativeElement);
     this.gl.clearColor(0.0588, 0.1176, 0.2196, 1);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.initShaders();
     this.animate();
   }
 
+  private setCanvasSize(canvas: HTMLCanvasElement): void {
+    // Obtener el tamaño del contenedor del canvas
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
+
+    // Verificar si el canvas necesita cambiar de tamaño
+    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
+    }
+
+    // Ajustar el viewport de WebGL
+    this.gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
   private initShaders(): void {
-    // VERTEX SHADER: Sirve para las posiciones de los vértices
-    // Su función principal es transformar las coordenadas de los vértices de un espacio de coordenadas a otro.
+    // VERTEX SHADER
     const vertexShaderSource = `
-  attribute vec3 aPosition;
-  attribute vec3 aNormal;       // Normales
-  attribute vec2 aTexCoord;     // Coordenadas de textura
-  uniform mat4 uModelMatrix;    // Matriz de transformación
-  uniform mat4 uViewMatrix;     // Matriz de vista (cámara)
-  uniform mat4 uProjectionMatrix; // Matriz de proyección
+      attribute vec3 aPosition;
+      attribute vec3 aNormal;
+      attribute vec2 aTexCoord;
+      uniform mat4 uModelMatrix;
+      uniform mat4 uViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      varying vec3 vNormal;
+      varying vec2 vTexCoord;
 
-  varying vec3 vNormal;         // Pasar normales al fragment shader
-  varying vec2 vTexCoord;       // Pasar coordenadas de textura al fragment shader
+      void main(void) {
+        gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+        vNormal = aNormal;
+        vTexCoord = aTexCoord;
+      }
+    `;
 
-  void main(void) {
-    // Transformar el vértice con la matriz de modelo, vista y proyección
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
-
-    // Pasar normales y coordenadas de textura al fragment shader
-    vNormal = aNormal;
-    vTexCoord = aTexCoord;
-  }
-`;
-    // FRAGMENT SHADER: Sirve para los colores de cada fragmento (píxel potencial)
-    // generado por el rasterizador.
+    // FRAGMENT SHADER
     const fragmentShaderSource = `
-  precision mediump float;
-  varying vec3 vNormal;         // Normales recibidas del vertex shader
-  varying vec2 vTexCoord;       // Coordenadas de textura recibidas del vertex shader
-  uniform vec4 uLightIntensity; // Intensidad de la luz
+      precision mediump float;
+      varying vec3 vNormal;
+      varying vec2 vTexCoord;
+      uniform sampler2D uBaseColorTexture;
+      uniform sampler2D uMetallicRoughnessTexture;
+      uniform vec4 uLightIntensity;
 
-  void main(void) {
-    // Usar las normales y coordenadas de textura para calcular el color
-    gl_FragColor = uLightIntensity * vec4(vTexCoord, 1.0, 1.0); // Ejemplo simple
-  }
-`;
+      void main(void) {
+        vec4 baseColor = texture2D(uBaseColorTexture, vTexCoord);
+        vec4 metallicRoughness = texture2D(uMetallicRoughnessTexture, vTexCoord);
+        vec3 finalColor = baseColor.rgb * uLightIntensity.rgb;
+        gl_FragColor = vec4(finalColor, baseColor.a);
+      }
+    `;
 
     const vertexShader = this.createShader(
       this.gl,
@@ -159,7 +174,6 @@ export class EngineService implements OnDestroy {
     }
     return program;
   }
-
   private animate() {
     // Llamar a animate() antes de la próxima actualización de la pantalla en cada frame
     this.frameId = requestAnimationFrame(() => this.animate());
@@ -170,17 +184,19 @@ export class EngineService implements OnDestroy {
       .find((nodo) => nodo.getEntidad() instanceof TCamara)
       ?.getEntidad() as TCamara;
     const viewMatrix = camara ? camara.getViewMatrix() : mat4.create();
-    // mat4.lookAt(viewMatrix, [0, 0, 50], [0, 0, 0], [0, 1, 0]);
 
     // Configurar matriz de proyección
     const projectionMatrix = mat4.create();
     mat4.perspective(
       projectionMatrix,
-      Math.PI / 4,
+      Math.PI / 3,
       this.gl.canvas.width / this.gl.canvas.height,
-      0.1,
-      100.0
+      0.5,
+      1000.0
     );
+
+    // Activar el programa de shaders
+    this.gl.useProgram(this.shaderProgram);
 
     // Pasar matrices al shader
     const uViewMatrix = this.gl.getUniformLocation(
@@ -191,10 +207,16 @@ export class EngineService implements OnDestroy {
       this.shaderProgram,
       'uProjectionMatrix'
     );
-    if (uViewMatrix && uProjectionMatrix) {
-      this.gl.uniformMatrix4fv(uViewMatrix, false, viewMatrix);
-      this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
+
+    if (!uViewMatrix || !uProjectionMatrix) {
+      console.error(
+        'No se pudieron encontrar las variables uniformes uViewMatrix o uProjectionMatrix en el shader.'
+      );
+      return;
     }
+
+    this.gl.uniformMatrix4fv(uViewMatrix, false, viewMatrix);
+    this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
 
     // Renderizar la escena
     const matrizInicial = mat4.create();
